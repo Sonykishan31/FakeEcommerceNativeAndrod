@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">StoreApplication</string>
+    <string name="Rs">\u20B9</string>
+    <string name="search_products_by_name">Search Product</string>
+</resources>
