@@ -1,10 +1,13 @@
 package com.example.storeapplication.model
 
+
+import android.media.Rating
+import com.example.storeapplication.abstraction.AbstractDataModel
 import com.google.gson.annotations.SerializedName
+import com.orm.SugarRecord
 import java.io.Serializable
 
-
-data class ProductListModel(
+class ProductListModel(
     @SerializedName("category")
     var category: String? = null,
     @SerializedName("description")
@@ -16,14 +19,14 @@ data class ProductListModel(
     @SerializedName("price")
     var price: Double? = null,
     @SerializedName("rating")
-    var rating: Rating? = null,
+    var rating: Ratings? = null,
     @SerializedName("title")
     var title: String? = null
 ) : Serializable
 
-data class Rating(
+class Ratings(
     @SerializedName("count")
     var count: Int? = null,
     @SerializedName("rate")
     var rate: Double? = null
-) : Serializable
+) :  Serializable

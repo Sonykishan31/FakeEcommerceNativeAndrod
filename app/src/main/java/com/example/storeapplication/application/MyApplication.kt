@@ -4,6 +4,7 @@ package com.example.storeapplication.application
 
 import android.app.Application
 import com.facebook.drawee.backends.pipeline.Fresco
+import com.orm.SugarContext
 
 
 class MyApplication : Application() {
@@ -22,7 +23,7 @@ class MyApplication : Application() {
         super.onCreate()
         instance = this
         Fresco.initialize(this)
-
+        SugarContext.init(instance)
 
 
     }
