@@ -23,6 +23,7 @@ import com.example.storeapplication.entities.RatingsEntity
 import com.example.storeapplication.listener.StoreItemClicklistener
 import com.example.storeapplication.model.CategoryModel
 import com.example.storeapplication.model.ProductListModel
+import com.example.storeapplication.model.Ratings
 import com.example.storeapplication.viewModel.CategoryListViewModel
 import com.example.storeapplication.viewModel.ProductListViewModel
 import com.orm.SugarRecord
@@ -178,6 +179,33 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
     private fun getProductList() {
 
 
+        // If data is available in local database, Get and fill the product list from local
+        val localListData = SugarRecord.listAll(ProductListEntity::class.java)
+        if (localListData.isNotEmpty()){
+
+            productList.clear()
+            for (i in 0 until  localListData.size){
+                val prodData = ProductListModel()
+                val ratingData = Ratings()
+                val ratingObj= SugarRecord.find(RatingsEntity::class.java, "product_id = ?", "${localListData[i].id}").get(0)
+                prodData.id=localListData[i].id
+                prodData.title=localListData[i].title
+                prodData.description=localListData[i].description
+                prodData.image=localListData[i].image
+                prodData.category=localListData[i].category
+
+                if (ratingObj!=null){
+                    ratingData.rate = ratingObj.rate
+                    ratingData.count = ratingObj.count
+                    prodData.rating =ratingData
+                }
+                productList.add(prodData)
+            }
+
+            adapter?.notifyDataSetChanged()
+            return
+        }
+
         recycleView.stateViewState = MyRecycleView.RecyclerViewStateEnum.LOADING
 
 
@@ -211,6 +239,7 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
             entityObj.description = productList[i].description
             entityObj.image = productList[i].image
             entityObj.price = productList[i].price
+            entityObj.category = productList[i].category
             entityObj.title = productList[i].title
 
             ratingObj.productId = productList[i].id!!
