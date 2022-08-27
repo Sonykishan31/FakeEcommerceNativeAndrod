@@ -7,13 +7,14 @@ import android.view.LayoutInflater
 import android.view.View
 import com.example.storeapplication.R
 import com.example.storeapplication.application.MyApplication
+import com.example.storeapplication.entities.CategoriesEntity
 import com.example.storeapplication.model.CategoryModel
 import com.example.storeapplication.view.MainActivity
 import kotlinx.android.synthetic.main.category_layout.view.*
 
 class CategoriesAdapter(
     activity: MainActivity,
-    var data: List<CategoryModel>,
+    var data: List<CategoriesEntity>,
     var itemClicklistener: StoreItemClicklistener
 ) :
     RecyclerView.Adapter<CategoriesAdapter.ViewHolder>() {
@@ -35,8 +36,8 @@ class CategoriesAdapter(
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
-        fun bind(data:CategoryModel)= with(itemView){
-            categoryNameTv.text = data.catName
+        fun bind(data:CategoriesEntity)= with(itemView){
+            categoryNameTv.text = data.categoryName
 
             when {
                 data.isSelected -> {

@@ -15,36 +15,42 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mvvm_kotlin_retrofit_livedata.customView.MyRecycleView
+import com.example.storeapplication.R
 import com.example.storeapplication.adapter.CategoriesAdapter
 import com.example.storeapplication.adapter.ProductListAdapter
 import com.example.storeapplication.entities.CategoriesEntity
 import com.example.storeapplication.entities.ProductListEntity
 import com.example.storeapplication.entities.RatingsEntity
 import com.example.storeapplication.listener.StoreItemClicklistener
-import com.example.storeapplication.model.CategoryModel
 import com.example.storeapplication.model.ProductListModel
-import com.example.storeapplication.model.Ratings
 import com.example.storeapplication.viewModel.CategoryListViewModel
 import com.example.storeapplication.viewModel.ProductListViewModel
 import com.orm.SugarRecord
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.error_view.view.*
+import kotlinx.android.synthetic.main.toolbar.*
 
 
 class MainActivity : AppCompatActivity(), StoreItemClicklistener {
 
     val activity = this
-    var searchResultHandleList: ArrayList<ProductListModel> = ArrayList()
-    var productList: ArrayList<ProductListModel> = ArrayList()
-    var categoryList: ArrayList<CategoryModel> = ArrayList()
+    var searchResultAndFilterHandleList: ArrayList<ProductListEntity> = ArrayList()
+    var productList: ArrayList<ProductListEntity> = ArrayList()
+    var categoryList: ArrayList<CategoriesEntity> = ArrayList()
     var productListViewModel: ProductListViewModel? = null
     var categoryListViewModel: CategoryListViewModel? = null
     var adapter: ProductListAdapter? = null
     var categoryListAdapter: CategoriesAdapter? = null
+    var selectedCategory = ""
     override fun onCreate(savedInstanceState: Bundle?) {
-        title = "Home Screen"
         super.onCreate(savedInstanceState)
         setContentView(com.example.storeapplication.R.layout.activity_main)
+
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayShowCustomEnabled(true)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+        titleText.text = resources.getString(R.string.app_name)
+        toolbar.setNavigationIcon(null)
 
         initializationOfCategory()
         initializationOfProducts()
@@ -72,7 +78,7 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
             override fun onQueryTextChange(newText: String): Boolean {
 
 
-                if (newText.isEmpty() && searchResultHandleList.isNotEmpty()) {
+                if (newText.isEmpty() && searchResultAndFilterHandleList.isNotEmpty()) {
                     resetSearch()
                 }
 
@@ -82,8 +88,8 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
             override fun onQueryTextSubmit(query: String): Boolean {
 //                textView.setText(query)
 
-                if (searchResultHandleList.isNullOrEmpty()) {
-                    searchResultHandleList.addAll(productList)
+                if (searchResultAndFilterHandleList.isNullOrEmpty()) {
+                    searchResultAndFilterHandleList.addAll(productList)
                 }
 
                 performSearch(query)
@@ -96,9 +102,9 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
     }
 
     private fun resetSearch() {
-        if (searchResultHandleList.isNotEmpty()) {
+        if (searchResultAndFilterHandleList.isNotEmpty()) {
             productList.clear()
-            productList.addAll(searchResultHandleList)
+            productList.addAll(searchResultAndFilterHandleList)
             adapter?.notifyDataSetChanged()
         }
     }
@@ -107,13 +113,13 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
 
         if (query.length > 2) {
             productList.clear()
-            productList.addAll(searchResultHandleList.filter {
+            productList.addAll(searchResultAndFilterHandleList.filter {
                 it.title?.lowercase()!!.contains(query.lowercase())
             })
         } else {
             resetSearch()
         }
-        Log.e("System out", "Size of main search : ${searchResultHandleList.size}")
+        Log.e("System out", "Size of main search : ${searchResultAndFilterHandleList.size}")
         adapter?.notifyDataSetChanged()
     }
 
@@ -140,7 +146,7 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
         recycleView.layoutManager = LinearLayoutManager(activity)
 
         // ProduceList adapter
-        adapter = ProductListAdapter(activity, productList, this)
+        adapter = ProductListAdapter(productList, this)
         recycleView.adapter = adapter
         recycleView.setHasFixedSize(true)
         recycleView.loadingStateView = progressbar
@@ -154,17 +160,26 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
 
     private fun getAllCategories() {
 
+        val localCategoryData = SugarRecord.listAll(CategoriesEntity::class.java)
+        if (localCategoryData.isNotEmpty()){
+            categoryList.clear()
+            categoryList.add(CategoriesEntity(categoryName = "All", isSelected = true))
+            categoryList.addAll(localCategoryData)
+            categoryListAdapter?.notifyDataSetChanged()
+            return
+        }
 
         categoryListViewModel?.getCategoryListResponseLiveData()?.observe(activity, Observer {
             if (!it.isNullOrEmpty()) {
 
                 categoryList.clear()
+                categoryList.add(CategoriesEntity(categoryName = "All", isSelected = true))
+                SugarRecord.deleteAll(CategoriesEntity::class.java)
                 for (i in 0 until it.size) {
-                    val obj = CategoryModel()
-                    obj.catName = "${it[i]}"
+                    val obj = CategoriesEntity()
+                    obj.categoryName = "${it[i]}"
                     categoryList.add(obj)
                     CategoriesEntity(it[i]).save()
-
                 }
                 categoryListAdapter?.notifyDataSetChanged()
             } else {
@@ -180,28 +195,20 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
 
 
         // If data is available in local database, Get and fill the product list from local
-        val localListData = SugarRecord.listAll(ProductListEntity::class.java)
-        if (localListData.isNotEmpty()){
+        val localProductListData = SugarRecord.listAll(ProductListEntity::class.java)
+        if (localProductListData.isNotEmpty()){
 
             productList.clear()
-            for (i in 0 until  localListData.size){
-                val prodData = ProductListModel()
-                val ratingData = Ratings()
-                val ratingObj= SugarRecord.find(RatingsEntity::class.java, "product_id = ?", "${localListData[i].id}").get(0)
-                prodData.id=localListData[i].id
-                prodData.title=localListData[i].title
-                prodData.description=localListData[i].description
-                prodData.image=localListData[i].image
-                prodData.category=localListData[i].category
+            productList.addAll(localProductListData)
+            searchResultAndFilterHandleList.clear()
+            for (i in 0 until  productList.size){
 
+                val ratingObj= SugarRecord.find(RatingsEntity::class.java, "product_id = ?", "${localProductListData[i].getId()}").get(0)
                 if (ratingObj!=null){
-                    ratingData.rate = ratingObj.rate
-                    ratingData.count = ratingObj.count
-                    prodData.rating =ratingData
+                    productList[i].rating = ratingObj
                 }
-                productList.add(prodData)
             }
-
+            searchResultAndFilterHandleList.addAll(productList)
             adapter?.notifyDataSetChanged()
             return
         }
@@ -211,11 +218,12 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
 
         productListViewModel?.getProductListResponseLiveData()?.observe(this, Observer {
             if (!it.isNullOrEmpty()) {
-                productList.addAll(it)
-                recycleView.stateViewState = MyRecycleView.RecyclerViewStateEnum.NORMAL
-                adapter?.notifyDataSetChanged()
 
-                performInsertDataOperation()
+                recycleView.stateViewState = MyRecycleView.RecyclerViewStateEnum.NORMAL
+                performInsertDataOperation(it)
+
+
+
             } else {
                 recycleView.stateViewState = MyRecycleView.RecyclerViewStateEnum.ERROR
 
@@ -224,32 +232,30 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
         })
     }
 
-    private fun performInsertDataOperation() {
+    private fun performInsertDataOperation(list: List<ProductListModel>) {
 
-        if (productList.isNotEmpty()) {
-            SugarRecord.deleteAll(ProductListEntity::class.java)
-            SugarRecord.deleteAll(CategoriesEntity::class.java)
+        SugarRecord.deleteAll(ProductListEntity::class.java)
+        productList.clear()
+        for (i in 0 until list.size){
+            val prodEntity = ProductListEntity()
+            val ratingsEntity = RatingsEntity()
+
+            prodEntity.id=list[i].id
+            prodEntity.image=list[i].image
+            prodEntity.title=list[i].title
+            prodEntity.category=list[i].category
+            prodEntity.description=list[i].description
+            prodEntity.price=list[i].price
+            ratingsEntity.rate = list[i].rating?.rate
+            ratingsEntity.count = list[i].rating?.count
+            ratingsEntity.productId = list[i].id!!
+            prodEntity.rating = ratingsEntity
+            prodEntity.save()
+            ratingsEntity.save()
+            productList.add(prodEntity)
         }
 
-        for (i in 0 until productList.size) {
-            val entityObj = ProductListEntity()
-            val ratingObj = RatingsEntity()
-            entityObj.id = productList[i].id
-            entityObj.title = productList[i].title
-            entityObj.description = productList[i].description
-            entityObj.image = productList[i].image
-            entityObj.price = productList[i].price
-            entityObj.category = productList[i].category
-            entityObj.title = productList[i].title
-
-            ratingObj.productId = productList[i].id!!
-            ratingObj.count = productList[i].rating?.count
-            ratingObj.rate = productList[i].rating?.rate
-
-            // Insert records to the database
-            entityObj.save()
-            ratingObj.save()
-        }
+        adapter?.notifyDataSetChanged()
     }
 
     override fun onProductItemClick(index: Int) {
@@ -263,8 +269,21 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
         for (i in 0 until categoryList.size) {
             categoryList[i].isSelected = i == index
         }
+        selectedCategory = categoryList.filter { it.isSelected }[0].categoryName
+        productList.clear()
+        if (selectedCategory.equals("all",true)){
+            productList.addAll(searchResultAndFilterHandleList)
+        }
+        else {
+            productList.addAll(searchResultAndFilterHandleList.filter { it.category.equals(selectedCategory) })
+        }
 
+        adapter?.notifyDataSetChanged()
         categoryListAdapter?.notifyDataSetChanged()
     }
 
 }
+
+
+
+

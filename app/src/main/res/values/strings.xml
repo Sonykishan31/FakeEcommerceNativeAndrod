@@ -1,5 +1,8 @@
 <resources>
-    <string name="app_name">StoreApplication</string>
+    <string name="app_name">Store Application</string>
     <string name="Rs">\u20B9</string>
     <string name="search_products_by_name">Search Product</string>
+    <string name="product_detail">Product Detail</string>
+    <string name="add_to_cart">Add To Cart</string>
+    <string name="remove_from_cart">Remove Item</string>
 </resources>
