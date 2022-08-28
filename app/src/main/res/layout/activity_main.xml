@@ -2,10 +2,12 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
+    android:layout_weight="1"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <include layout="@layout/toolbar"/>
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
@@ -16,33 +18,65 @@
 
     <FrameLayout
         android:layout_width="match_parent"
+        android:layout_weight="1"
         android:layout_height="match_parent">
 
-    <com.example.mvvm_kotlin_retrofit_livedata.customView.MyRecycleView
-        android:id="@+id/recycleView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:overScrollMode="never"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        <com.example.mvvm_kotlin_retrofit_livedata.customView.MyRecycleView
+            android:id="@+id/recycleView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:overScrollMode="never"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="1.0" />
 
-    <androidx.core.widget.ContentLoadingProgressBar
-        android:id="@+id/progressbar"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_gravity="center"
-        android:indeterminate="true"
-        android:indeterminateTint="@color/colorAccent"
-        style="@style/Widget.AppCompat.ProgressBar"></androidx.core.widget.ContentLoadingProgressBar>
+        <androidx.core.widget.ContentLoadingProgressBar
+            android:id="@+id/progressbar"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_gravity="center"
+            android:indeterminate="true"
+            android:indeterminateTint="@color/colorAccent"
+            style="@style/Widget.AppCompat.ProgressBar"></androidx.core.widget.ContentLoadingProgressBar>
 
-    <include
-        layout="@layout/error_view"
-        android:id="@+id/errorView"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/recycleView"></include>
+        <include
+            layout="@layout/error_view"
+            android:id="@+id/errorView"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/recycleView"></include>
 
     </FrameLayout>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:padding="10dp"
+        android:id="@+id/totalMainLL"
+        android:background="@color/green"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:textStyle="bold"
+            android:padding="5dp"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:text="Go to Cart"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:textStyle="bold"
+            android:padding="5dp"
+            android:id="@+id/totalMainTv"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:text=""
+            android:layout_height="wrap_content"/>
+
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
 </androidx.appcompat.widget.LinearLayoutCompat>

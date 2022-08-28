@@ -18,7 +18,9 @@ import com.example.mvvm_kotlin_retrofit_livedata.customView.MyRecycleView
 import com.example.storeapplication.R
 import com.example.storeapplication.adapter.CategoriesAdapter
 import com.example.storeapplication.adapter.ProductListAdapter
+import com.example.storeapplication.application.MyApplication
 import com.example.storeapplication.entities.CategoriesEntity
+import com.example.storeapplication.entities.MyCart
 import com.example.storeapplication.entities.ProductListEntity
 import com.example.storeapplication.entities.RatingsEntity
 import com.example.storeapplication.listener.StoreItemClicklistener
@@ -42,9 +44,10 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
     var adapter: ProductListAdapter? = null
     var categoryListAdapter: CategoriesAdapter? = null
     var selectedCategory = ""
+    val ALL  = "ALL"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(com.example.storeapplication.R.layout.activity_main)
+        setContentView(R.layout.activity_main)
 
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayShowCustomEnabled(true)
@@ -66,10 +69,10 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
 
-        menuInflater.inflate(com.example.storeapplication.R.menu.menu, menu)
+        menuInflater.inflate(R.menu.menu, menu)
         // Retrieve the SearchView and plug it into SearchManager
         val searchView: SearchView =
-            MenuItemCompat.getActionView(menu!!.findItem(com.example.storeapplication.R.id.action_search)) as SearchView
+            MenuItemCompat.getActionView(menu!!.findItem(R.id.action_search)) as SearchView
         val searchManager = getSystemService(SEARCH_SERVICE) as SearchManager
         searchView.setSearchableInfo(searchManager.getSearchableInfo(componentName))
 
@@ -161,10 +164,12 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
     private fun getAllCategories() {
 
         val localCategoryData = SugarRecord.listAll(CategoriesEntity::class.java)
+        selectedCategory = ALL
         if (localCategoryData.isNotEmpty()){
             categoryList.clear()
-            categoryList.add(CategoriesEntity(categoryName = "All", isSelected = true))
+            categoryList.add(CategoriesEntity(categoryName = ALL, isSelected = true))
             categoryList.addAll(localCategoryData)
+            handleTotalView()
             categoryListAdapter?.notifyDataSetChanged()
             return
         }
@@ -173,7 +178,7 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
             if (!it.isNullOrEmpty()) {
 
                 categoryList.clear()
-                categoryList.add(CategoriesEntity(categoryName = "All", isSelected = true))
+                categoryList.add(CategoriesEntity(categoryName = ALL, isSelected = true))
                 SugarRecord.deleteAll(CategoriesEntity::class.java)
                 for (i in 0 until it.size) {
                     val obj = CategoriesEntity()
@@ -260,7 +265,7 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
 
     override fun onProductItemClick(index: Int) {
         val i = Intent(activity, ProductDetailActivity::class.java)
-        i.putExtra("productDetail", productList[index])
+        i.putExtra("productId", productList[index].getId())
         startActivity(i)
     }
 
@@ -271,7 +276,7 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
         }
         selectedCategory = categoryList.filter { it.isSelected }[0].categoryName
         productList.clear()
-        if (selectedCategory.equals("all",true)){
+        if (selectedCategory.equals(ALL,true)){
             productList.addAll(searchResultAndFilterHandleList)
         }
         else {
@@ -280,6 +285,42 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
 
         adapter?.notifyDataSetChanged()
         categoryListAdapter?.notifyDataSetChanged()
+    }
+
+    override fun addToCartActin(index: Int) {
+        MyCart.addItemToCart(productList[index].getId().toInt())
+        refreshAdapter()
+    }
+
+    override fun removeFromCartAction(index: Int) {
+        MyCart.removeItemFromCart(productList[index].getId().toInt())
+        refreshAdapter()
+    }
+
+    fun refreshAdapter(){
+
+        productList.clear()
+        if (selectedCategory.equals(ALL,true)){
+            productList.addAll(searchResultAndFilterHandleList)
+        }
+        else{
+            productList.addAll(searchResultAndFilterHandleList.filter { it.category.equals(selectedCategory) })
+
+        }
+        handleTotalView()
+        adapter?.notifyDataSetChanged()
+    }
+
+    fun handleTotalView(){
+
+        val totalAmount = MyCart.calculateTotal()
+        totalMainTv.text = "${MyApplication.instance.getString(R.string.Rs)} $totalAmount"
+        if (totalAmount > 0){
+            totalMainLL.visibility = View.VISIBLE
+        }
+        else {
+            totalMainLL.visibility = View.GONE
+        }
     }
 
 }

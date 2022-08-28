@@ -19,12 +19,13 @@ class MyCart : AbstractDataModel<MyCart>() {
             return SugarRecord.find(MyCart::class.java,"product_id = ?","${productId}")[0].quantity!!
         }
 
+
         fun isExist(productId: Int) : Boolean {
 
             return SugarRecord.find(MyCart::class.java,"product_id = ?","${productId}").isNotEmpty()
         }
 
-        fun addIteTtoCart(productId:Int){
+        fun addItemToCart(productId:Int){
 
             if (isExist(productId)){
                 val obj = SugarRecord.find(MyCart::class.java,"product_id = ?","${productId}")[0]
@@ -35,14 +36,15 @@ class MyCart : AbstractDataModel<MyCart>() {
                 val obj  = MyCart()
                 obj.productId = productId
                 obj.quantity = obj.quantity+1
+                obj.save()
             }
 
         }
 
-        fun removeIteTtoCart(productId:Int){
+        fun removeItemFromCart(productId:Int){
 
             if (isExist(productId)){
-                val obj = SugarRecord.find(MyCart::class.java,"product_id","${productId}")[0]
+                val obj = SugarRecord.find(MyCart::class.java,"product_id = ?","${productId}")[0]
                 if (obj.quantity > 0){
                     obj.quantity =obj.quantity-1
                     obj.save()
@@ -54,6 +56,31 @@ class MyCart : AbstractDataModel<MyCart>() {
 
         }
 
+        fun calculateTotal () : Double {
+
+            if (SugarRecord.listAll(MyCart::class.java).isEmpty()){
+                return 0.0
+            }
+
+            val productList = SugarRecord.listAll(ProductListEntity::class.java)
+
+            var totalAmount = 0.0
+            if (productList.isNotEmpty()){
+
+                for (i in 0 until productList.size){
+                    if (isExist(productList[i].getId().toInt())){
+                        val qty = getItemQty(productList[i].getId())
+
+                        totalAmount += (productList[i].price!! * qty)
+
+                    }
+                }
+
+            }
+            return totalAmount
+        }
+
     }
 
 }
+

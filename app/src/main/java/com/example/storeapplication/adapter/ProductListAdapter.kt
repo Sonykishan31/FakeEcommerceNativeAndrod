@@ -31,19 +31,40 @@ class ProductListAdapter(
             storeItemClicklistener.onProductItemClick(holder.adapterPosition)
         }
 
-        Log.e("System out","Product Qty is : ${MyCart.getItemQty(listData[holder.adapterPosition].getId())}")
+        holder.itemView.addToCartBtn.setOnClickListener {
+            storeItemClicklistener.addToCartActin(holder.adapterPosition)
+        }
+
+        holder.itemView.addBtn.setOnClickListener {
+            storeItemClicklistener.addToCartActin(holder.adapterPosition)
+        }
+
+        holder.itemView.removeBtn.setOnClickListener {
+            storeItemClicklistener.removeFromCartAction(holder.adapterPosition)
+        }
     }
     override fun getItemCount(): Int {
         return listData.size
     }
 
-     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
-         fun bind(dataObj:ProductListEntity) = with(itemView){
-             productImageSdv.setImageURI(dataObj.image)
-             productNameTv.text = dataObj.title
-             productDescriptionTv.text = dataObj.description
-             productPriceTv.text = "${MyApplication.instance.getString(R.string.Rs)} ${dataObj.price}"
-             productRatingTv.text = ""+dataObj.rating?.rate
-         }
-     }
+    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView){
+        fun bind(dataObj:ProductListEntity) = with(itemView){
+            productImageSdv.setImageURI(dataObj.image)
+            productNameTv.text = dataObj.title
+            productDescriptionTv.text = dataObj.description
+            productPriceTv.text = "${MyApplication.instance.getString(R.string.Rs)} ${dataObj.price}"
+            productRatingTv.text = ""+dataObj.rating?.rate
+
+            if (MyCart.getItemQty(dataObj.getId()!!) > 0) {
+                cartAddRemoveBtnMainLL.visibility = View.VISIBLE
+                qtyText.text = ""+MyCart.getItemQty(dataObj.getId())
+                addToCartBtn.visibility = View.GONE
+            }
+            else {
+                cartAddRemoveBtnMainLL.visibility = View.GONE
+                addToCartBtn.visibility = View.VISIBLE
+            }
+
+        }
+    }
 }

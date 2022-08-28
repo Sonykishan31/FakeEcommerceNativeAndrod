@@ -1,14 +1,18 @@
 package com.example.storeapplication.view
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.storeapplication.R
 import com.example.storeapplication.api.RestClient
 import com.example.storeapplication.application.MyApplication
+import com.example.storeapplication.entities.MyCart
 import com.example.storeapplication.entities.ProductListEntity
+import com.example.storeapplication.entities.RatingsEntity
 import com.orm.SugarRecord
 import kotlinx.android.synthetic.main.activity_product_detail.*
+import kotlinx.android.synthetic.main.product_list_layout.view.*
 import kotlinx.android.synthetic.main.toolbar.*
 
 
@@ -29,41 +33,35 @@ class ProductDetailActivity : AppCompatActivity() {
         }
 
 
-        if (intent.hasExtra("productDetail")){
-            productDetail = intent.extras?.get("productDetail") as ProductListEntity?
+        if (intent.hasExtra("productId")){
+            val prodId = intent.extras
+                ?.get("productId")
+            productDetail = SugarRecord.find(ProductListEntity::class.java,"id = ?","${prodId}")[0]
             setDataToViews()
         }
 
     }
 
     private fun setDataToViews() {
+
+
+        val ratingObj= SugarRecord.find(RatingsEntity::class.java, "product_id = ?", "${productDetail?.getId()}").get(0)
+        if (ratingObj!=null){
+            productDetail?.rating = ratingObj
+        }
         productDetailImageSdv.setImageURI(productDetail?.image)
         productDetailNameTv.text = productDetail?.title
         productDetailDescriptionTv.text = productDetail?.description
         productDetailPriceTv.text = "${MyApplication.instance.getString(com.example.storeapplication.R.string.Rs)} ${productDetail?.price}"
         productDetailRatingTv.text = ""+productDetail?.rating?.rate
-
-        productDetailsAddToCartLL.setOnClickListener {
-            if (productDetail?.isAddedToCart!!){
-
-            }
-            else {
-
-            }
+        if (MyCart.getItemQty(productDetail?.getId()!!) > 0) {
+            cartAddRemoveBtnMainLL.visibility = View.VISIBLE
+            qtyText.text = ""+ MyCart.getItemQty(productDetail?.getId()!!)
+            addToCartBtn.visibility = View.GONE
         }
-
-        changeBtnState(productDetail?.isAddedToCart)
-    }
-
-    private fun changeBtnState(addedToCart: Boolean?) {
-
-        if (addedToCart!!){
-            productDetailsAddToCartLL.setBackgroundColor(ContextCompat.getColor(activity,R.color.green))
-            productDetailAddToCartTv.text = getString(R.string.remove_from_cart)
-        }
-        else{
-            productDetailsAddToCartLL.setBackgroundColor(ContextCompat.getColor(activity,R.color.purple_700))
-            productDetailAddToCartTv.text = getString(R.string.add_to_cart)
+        else {
+            cartAddRemoveBtnMainLL.visibility = View.GONE
+            addToCartBtn.visibility = View.VISIBLE
         }
     }
 }
