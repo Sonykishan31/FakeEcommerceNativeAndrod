@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:orientation="vertical"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/white"
     android:layout_height="match_parent">
 
     <include layout="@layout/toolbar" />
@@ -42,6 +43,7 @@
                 android:layout_width="match_parent"
                 android:id="@+id/productDetailDescriptionTv"
                 android:padding="5dp"
+                style="@style/myTextStyleMedium"
                 android:textSize="14sp"
                 android:layout_height="wrap_content"/>
 
@@ -85,6 +87,7 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:text="Add"
             android:layout_margin="5dp"
+            app:strokeColor="@color/black"
             android:id="@+id/addToCartBtn"
             android:textStyle="bold"
             android:layout_height="wrap_content"/>
@@ -100,6 +103,7 @@
                 android:layout_width="50dp"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:text="-"
+                app:strokeColor="@color/black"
                 android:textStyle="bold"
                 android:layout_margin="5dp"
                 android:id="@+id/removeBtn"
@@ -107,14 +111,14 @@
 
             <TextView
                 android:layout_width="wrap_content"
-                android:padding="5dp"
                 android:text="0"
                 android:id="@+id/qtyText"
-                android:textSize="16sp"
+                style="@style/myTextStyleMedium"
                 android:layout_height="wrap_content"/>
 
             <com.google.android.material.button.MaterialButton
                 android:layout_width="50dp"
+                app:strokeColor="@color/black"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:text="+"
                 android:layout_margin="5dp"
