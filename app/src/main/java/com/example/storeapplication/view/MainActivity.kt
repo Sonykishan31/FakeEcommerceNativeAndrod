@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
     var categoryList: ArrayList<CategoriesEntity> = ArrayList()
     var productListViewModel: ProductListViewModel? = null
     var categoryListViewModel: CategoryListViewModel? = null
-    var adapter: ProductListAdapter? = null
+    var productListAdapter: ProductListAdapter? = null
     var categoryListAdapter: CategoriesAdapter? = null
     var selectedCategory = ""
     val ALL  = "ALL"
@@ -57,13 +57,16 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
 
         initializationOfCategory()
         initializationOfProducts()
-        getAllCategories()
-        getProductList()
+//        getAllCategories()
+//        getProductList()
 
         errorView.btnRetry.setOnClickListener {
             getProductList()
         }
 
+        totalMainLL.setOnClickListener {
+            startActivity(Intent(activity,CartActivity::class.java))
+        }
 
     }
 
@@ -108,7 +111,7 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
         if (searchResultAndFilterHandleList.isNotEmpty()) {
             productList.clear()
             productList.addAll(searchResultAndFilterHandleList)
-            adapter?.notifyDataSetChanged()
+            productListAdapter?.notifyDataSetChanged()
         }
     }
 
@@ -123,7 +126,7 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
             resetSearch()
         }
         Log.e("System out", "Size of main search : ${searchResultAndFilterHandleList.size}")
-        adapter?.notifyDataSetChanged()
+        productListAdapter?.notifyDataSetChanged()
     }
 
     private fun initializationOfCategory() {
@@ -149,8 +152,8 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
         recycleView.layoutManager = LinearLayoutManager(activity)
 
         // ProduceList adapter
-        adapter = ProductListAdapter(productList, this)
-        recycleView.adapter = adapter
+        productListAdapter = ProductListAdapter(productList, this)
+        recycleView.adapter = productListAdapter
         recycleView.setHasFixedSize(true)
         recycleView.loadingStateView = progressbar
         recycleView.errorStateView = errorView
@@ -196,6 +199,12 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
         })
     }
 
+    override fun onResume() {
+        super.onResume()
+        getAllCategories()
+        getProductList()
+    }
+
     private fun getProductList() {
 
 
@@ -214,20 +223,21 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
                 }
             }
             searchResultAndFilterHandleList.addAll(productList)
-            adapter?.notifyDataSetChanged()
+            productListAdapter?.notifyDataSetChanged()
             return
         }
 
-        recycleView.stateViewState = MyRecycleView.RecyclerViewStateEnum.LOADING
 
+        // Fetch Data from remote if not available in local
+        recycleView.stateViewState = MyRecycleView.RecyclerViewStateEnum.LOADING
 
         productListViewModel?.getProductListResponseLiveData()?.observe(this, Observer {
             if (!it.isNullOrEmpty()) {
 
                 recycleView.stateViewState = MyRecycleView.RecyclerViewStateEnum.NORMAL
+
+                //Insert response data into local database
                 performInsertDataOperation(it)
-
-
 
             } else {
                 recycleView.stateViewState = MyRecycleView.RecyclerViewStateEnum.ERROR
@@ -260,7 +270,7 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
             productList.add(prodEntity)
         }
 
-        adapter?.notifyDataSetChanged()
+        productListAdapter?.notifyDataSetChanged()
     }
 
     override fun onProductItemClick(index: Int) {
@@ -283,7 +293,7 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
             productList.addAll(searchResultAndFilterHandleList.filter { it.category.equals(selectedCategory) })
         }
 
-        adapter?.notifyDataSetChanged()
+        productListAdapter?.notifyDataSetChanged()
         categoryListAdapter?.notifyDataSetChanged()
     }
 
@@ -308,7 +318,7 @@ class MainActivity : AppCompatActivity(), StoreItemClicklistener {
 
         }
         handleTotalView()
-        adapter?.notifyDataSetChanged()
+        productListAdapter?.notifyDataSetChanged()
     }
 
     fun handleTotalView(){

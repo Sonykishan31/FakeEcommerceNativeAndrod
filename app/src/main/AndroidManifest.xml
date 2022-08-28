@@ -21,8 +21,13 @@
         android:theme="@style/Theme.StoreApplication"
         tools:targetApi="31">
         <activity
-            android:name=".CartScreen"
+            android:name=".view.OrderSuccessfullActivity"
+            android:screenOrientation="nosensor"
             android:exported="false" />
+        <activity
+            android:name=".view.CartActivity"
+            android:exported="false"
+            android:screenOrientation="nosensor" />
         <activity
             android:name=".view.ProductDetailActivity"
             android:exported="false"

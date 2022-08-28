@@ -45,7 +45,7 @@ class MyCart : AbstractDataModel<MyCart>() {
 
             if (isExist(productId)){
                 val obj = SugarRecord.find(MyCart::class.java,"product_id = ?","${productId}")[0]
-                if (obj.quantity > 0){
+                if (obj.quantity > 1){
                     obj.quantity =obj.quantity-1
                     obj.save()
                 }

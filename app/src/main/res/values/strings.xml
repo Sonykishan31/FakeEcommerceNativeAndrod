@@ -5,4 +5,8 @@
     <string name="product_detail">Product Detail</string>
     <string name="add_to_cart">Add To Cart</string>
     <string name="remove_from_cart">Remove Item</string>
+    <string name="my_cart">My Cart</string>
+    <string name="checkout">Checkout</string>
+    <string name="your_cart_is_empty">Your cart is empty!</string>
+    <string name="order_successful">Order Successful</string>
 </resources>

@@ -1,18 +1,16 @@
 package com.example.storeapplication.view
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import com.example.storeapplication.R
-import com.example.storeapplication.api.RestClient
 import com.example.storeapplication.application.MyApplication
 import com.example.storeapplication.entities.MyCart
 import com.example.storeapplication.entities.ProductListEntity
 import com.example.storeapplication.entities.RatingsEntity
 import com.orm.SugarRecord
 import kotlinx.android.synthetic.main.activity_product_detail.*
-import kotlinx.android.synthetic.main.product_list_layout.view.*
 import kotlinx.android.synthetic.main.toolbar.*
 
 
@@ -38,12 +36,35 @@ class ProductDetailActivity : AppCompatActivity() {
                 ?.get("productId")
             productDetail = SugarRecord.find(ProductListEntity::class.java,"id = ?","${prodId}")[0]
             setDataToViews()
+            setClickListeners()
         }
+
+
 
     }
 
-    private fun setDataToViews() {
+    private fun setClickListeners() {
+        addBtn.setOnClickListener {
+            addToCartBtn.performClick()
+        }
 
+        productDetailTotalMainLL.setOnClickListener {
+            startActivity(Intent(activity,CartActivity::class.java))
+            finish()
+        }
+
+        addToCartBtn.setOnClickListener {
+            MyCart.addItemToCart(productDetail?.getId()!!.toInt())
+            setDataToViews()
+        }
+
+        removeBtn.setOnClickListener {
+            MyCart.removeItemFromCart(productDetail?.getId()!!.toInt())
+            setDataToViews()
+        }
+    }
+
+    private fun setDataToViews() {
 
         val ratingObj= SugarRecord.find(RatingsEntity::class.java, "product_id = ?", "${productDetail?.getId()}").get(0)
         if (ratingObj!=null){
@@ -54,6 +75,7 @@ class ProductDetailActivity : AppCompatActivity() {
         productDetailDescriptionTv.text = productDetail?.description
         productDetailPriceTv.text = "${MyApplication.instance.getString(com.example.storeapplication.R.string.Rs)} ${productDetail?.price}"
         productDetailRatingTv.text = ""+productDetail?.rating?.rate
+        handleTotalView()
         if (MyCart.getItemQty(productDetail?.getId()!!) > 0) {
             cartAddRemoveBtnMainLL.visibility = View.VISIBLE
             qtyText.text = ""+ MyCart.getItemQty(productDetail?.getId()!!)
@@ -62,6 +84,19 @@ class ProductDetailActivity : AppCompatActivity() {
         else {
             cartAddRemoveBtnMainLL.visibility = View.GONE
             addToCartBtn.visibility = View.VISIBLE
+        }
+    }
+
+
+    fun handleTotalView(){
+
+        val totalAmount = MyCart.calculateTotal()
+        productDetailTotalMainTv.text = "${MyApplication.instance.getString(R.string.Rs)} $totalAmount"
+        if (totalAmount > 0){
+            productDetailTotalMainLL.visibility = View.VISIBLE
+        }
+        else {
+            productDetailTotalMainLL.visibility = View.GONE
         }
     }
 }

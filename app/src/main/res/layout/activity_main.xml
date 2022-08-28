@@ -54,6 +54,7 @@
         android:orientation="horizontal"
         android:padding="10dp"
         android:id="@+id/totalMainLL"
+        android:visibility="gone"
         android:background="@color/green"
         android:layout_height="wrap_content">
 
